@@ -236,38 +236,84 @@ export default handler
 
 ## 🌐 Integrasi REST API Habibih Cloud ID
 
-Bot ini sudah terhubung ke REST API HABI. Kalau API-nya hidup, bot dapat
-fitur image maker & downloader **tanpa perlu nulis logika render sendiri**.
+Bot ini terhubung ke **35 endpoint** REST API HABI. Semua perintah di
+`plugins/api/` cuma memanggil API — tidak ada logika render di dalam bot,
+jadi hemat resource dan hasilnya konsisten dengan web.
 
-### Cara pakai
+### Perintah
 
-| Perintah | Hasil |
+**Gambar**
+
+| Perintah | Endpoint |
 |---|---|
-| `%iqc Halo dunia` | Screenshot chat iPhone lengkap dengan context menu |
-| `%quote Halo` | Sama seperti `%iqc` |
-| `%reply Jalan crur` | Fake balasan chat WhatsApp |
-| `%welcome Budi` | Kartu sambutan member grup |
-| `%meme Teks atas` | Meme |
-| `%brat HAI` | Gambar brat |
-| `.apiget <link>` | Ambil video TikTok / FB / IG / X lalu kirim ke chat |
-| `.apistatus` | Cek koneksi ke API |
+| `.iqc <teks>` | Screenshot chat iPhone + context menu |
+| `.reply <1-5> <teks>` | Fake balasan chat (5 varian) |
+| `.meme <url> <atas> <bawah>` | Meme |
+| `.watermark <url> <teks>` | Watermark foto |
+| `.brat <teks>` | Gambar brat |
+| `.bratvid <teks>` | Brat jadi video MP4 |
+| `.welcomecard <nama> [grup]` | Kartu sambutan member |
+| `.stikerapi <url>` | Foto jadi stiker WebP |
+| `.removebg <url>` | Hapus background |
+| `.ssweb <url>` | Screenshot website |
 
-Prefix `.` ikut aturan bot — kalau prefix lu berbeda, sesuaikan.
+**Downloader**
+
+| Perintah | Endpoint |
+|---|---|
+| `.ytsearch <kata>` | Cari YouTube |
+| `.ytinfo <url>` | Metadata video |
+| `.ytthumb <id>` | URL thumbnail |
+| `.spotify <url>` | Spotify → YouTube |
+| `.apiget <url>` | Link media + info (TikTok/FB/IG/X) |
+| `.apikirim <url>` | Kirim video ke chat |
+| `.detect <url>` | Cek platform |
+| `.getfile <url>` | Unduh file apa pun |
+| `.ttsapi <teks>` | Teks → MP3 |
+| `.pdfcompress <url>` | Kompres PDF |
+
+**Tools**
+
+| Perintah | Endpoint |
+|---|---|
+| `.translate [kode] <teks>` | Terjemahkan |
+| `.ocr <url>` | Baca teks di gambar |
+| `.webfetch <url>` | Ambil isi teks web |
+| `.phonespec <model>` | Spek HP |
+| `.phonecompare <a> <b>` | Bandingkan 2 HP |
+| `.lirik <judul>` | Cari lirik |
+| `.humanizer <teks>` | Tulis ulang teks kaku ala AI |
+
+`.apistatus` buat cek koneksi dan lihat semua perintah sekaligus.
 
 ### Konfigurasi
 
-Semua opsional. Kalau `HABI_API_KEY` dikosongkan, bot otomatis ambil key
-gratis lewat `/api/register` dan menyimpannya di memory.
+Semua opsional di `.env`:
 
-```bash
-# .env
+```env
 HABI_API_URL=https://api.habibicloudserver.dpdns.org
 HABI_API_KEY=
-HABI_API_TIMEOUT_MS=60000
 ```
 
-### Keamanan
+Kalau `HABI_API_KEY` dikosongkan, bot otomatis mendaftar lewat
+`/api/register` dan memakai key gratis.
 
-Semua API key untuk downloader (TikTok, Facebook, YouTube MP3) **wajib
-diisi lewat `.env`** — tidak ada lagi key yang ditulis langsung di dalam
-kode. Kalau key kosong, plugin itu otomatis pakai jalur fallback lain.
+### Menguji tanpa WhatsApp
+
+```bash
+node scripts/test-api-plugins.mjs
+```
+
+Script ini menjalankan 28 plugin sungguhan terhadap API produksi
+(memakai stub Baileys), jadi kelihatannya sebelum dipasang ke chat.
+
+### Menambah perintah baru
+
+Definisi plugin ada di `scripts/api-plugins.json`. Tambah entry, lalu:
+
+```bash
+node scripts/gen-api-plugins.mjs
+```
+
+File di `plugins/api/` dibuat ulang dari definisi itu — jadi edit
+`api-plugins.json`, bukan file hasilnya.
