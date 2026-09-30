@@ -173,7 +173,9 @@ console.log('  \x1b[36m╭──────────────────
       }
 
       if (shouldReconnect) {
-        printStatus('Koneksi terputus, mencoba menyambung ulang...', 'warn')
+        // Kode disconnect dipakai untuk diagnosa: 440 = connectionReplaced
+        // (ada instance lain memakai sesi yang sama), 401 = logout.
+        printStatus(`Koneksi terputus (kode ${statusCode ?? '?'}), mencoba menyambung ulang...`, 'warn')
         setTimeout(() => startConnection({ onReady, onPluginReload }), 3000)
       } else {
         printStatus('Bot berhenti (logged out). Jalankan ulang untuk pairing baru.', 'error')
