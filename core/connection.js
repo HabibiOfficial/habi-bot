@@ -32,6 +32,7 @@ const logger = pino({ level: 'silent' })
 
 let pairingRequested = false
 let pairingCodeShown = false
+let pairingRefreshTimer = null
 
 async function resolvePairingNumber() {
   if (process.env.PAIRING_NUMBER) {
@@ -127,6 +128,7 @@ export async function startConnection({ onReady, onPluginReload } = {}) {
           process.exit(1)
         }
 
+
         try {
           printStatus(`Meminta kode untuk nomor tujuan : ${number}`, 'loading')
 
@@ -143,7 +145,24 @@ console.log('  \x1b[36m╭──────────────────
           console.log('')
           printStatus('WhatsApp > Perangkat Tertaut > Tautkan Perangkat', 'info')
           printStatus('Pilih "Tautkan dengan nomor telepon", lalu masukkan kode di atas.', 'info')
-          printStatus('Kode berlaku sekitar 60 detik. Restart bot jika kode kedaluwarsa.', 'warn')
+          printStatus('Kode berlaku sekitar 60 detik. Bot otomatis meminta kode baru tiap 45 detik.', 'warn')
+
+          // Kode pairing hanya hidup ~60 detik, jadi sering sekali kadaluarsa
+          // sebelum sempat dipakai. Selagi belum registered, minta kode baru
+          // berkala supaya selalu ada satu yang valid di log.
+          clearInterval(pairingRefreshTimer)
+          pairingRefreshTimer = setInterval(() => {
+            if (state.creds?.registered) {
+              clearInterval(pairingRefreshTimer)
+              return
+            }
+            requestPairingCodeWithRetry(number)
+              .then((fresh) => {
+                const freshFormatted = fresh?.match(/.{1,4}/g)?.join('-') || fresh
+                printStatus(`🔄 Kode pairing baru: ${freshFormatted}`, 'loading')
+              })
+              .catch(() => { /* diamkan, coba lagi di interval berikutnya */ })
+          }, 45000)
         } catch (err) {
           printStatus(`Gagal meminta pairing code: ${err.message}`, 'error')
           printStatus('Pastikan nomor benar dan koneksi internet stabil, lalu restart bot.', 'warn')
@@ -153,6 +172,10 @@ console.log('  \x1b[36m╭──────────────────
 
     if (connection === 'open') {
       pairingRequested = false
+      if (state.creds?.registered && pairingRefreshTimer) {
+        clearInterval(pairingRefreshTimer)
+        pairingRefreshTimer = null
+      }
       printStatus('Berhasil terhubung ke WhatsApp!', 'success')
       onReady?.(conn)
     }
@@ -173,6 +196,12 @@ console.log('  \x1b[36m╭──────────────────
       }
 
       if (shouldReconnect) {
+        // 515 = restartRequired. WhatsApp mensyaratkan restart setelah
+        // pairing code diminta. Kalau flag tidak di-reset, kode baru
+        // tidak akan pernah terbit dan proses diam saja.
+        if (statusCode === 515 || !state.creds?.registered) {
+          pairingRequested = false
+        }
         // Kode disconnect dipakai untuk diagnosa: 440 = connectionReplaced
         // (ada instance lain memakai sesi yang sama), 401 = logout.
         printStatus(`Koneksi terputus (kode ${statusCode ?? '?'}), mencoba menyambung ulang...`, 'warn')
