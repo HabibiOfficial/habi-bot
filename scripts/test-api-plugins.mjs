@@ -23,8 +23,8 @@ console.log(`\n  key: ${reg.apikey.slice(0, 10)}…\n`)
 /* Setiap kasus: nama file + argumen + jenis yang diharapkan */
 const CASES = [
   ['apiiqc.js', 'Halo dunia dari bot', 'image'],
-  ['apibrat.js', 'halo semua', 'image'],
-  ['apibratvid.js', 'halo', 'video'],
+  ['apibrat.js', 'halo semua', 'sticker'],
+  ['apibratvid.js', 'halo', 'sticker'],
   ['apimeme.js', 'https://picsum.photos/seed/x/600/400 atas bawah', 'image'],
   ['apiwatermark.js', 'https://picsum.photos/seed/y/600/400 HABI', 'image'],
   ['apiwelcome.js', 'Budi Tester', 'image'],

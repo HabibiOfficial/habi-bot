@@ -45,19 +45,6 @@ const handler = async (m, { conn, usedPrefix }) => {
     })),
   }))
 
-  const audioPath = './assets/audio/habibih.mp3'
-  if (fs.existsSync(audioPath)) {
-    await conn.sendMessage(
-      m.chat,
-      {
-        audio: fs.readFileSync(audioPath),
-        mimetype: 'audio/mp4',
-        ptt: false,
-      },
-      { quoted: m.raw }
-    )
-  }
-
   const button = new ButtonV2(conn)
     .setBody(' ') .setFooter(footerLong)
 
@@ -84,6 +71,22 @@ const handler = async (m, { conn, usedPrefix }) => {
   })
 
   await button.send(m.chat, { quoted: m.raw })
+
+  // Audio dikirim SESUDAH tombol menu, bukan sebelumnya.
+  // Dulu audio dikirim lebih dulu sehingga suara/menu muncul di atas
+  // dan menutupi tombol; sekarang audio ada di bawahnya.
+  const audioPath = './assets/audio/habibih.mp3'
+  if (fs.existsSync(audioPath)) {
+    await conn.sendMessage(
+      m.chat,
+      {
+        audio: fs.readFileSync(audioPath),
+        mimetype: 'audio/mp4',
+        ptt: false,
+      },
+      { quoted: m.raw }
+    )
+  }
 }
 
 handler.command = /^menu$/i

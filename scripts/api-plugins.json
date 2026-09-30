@@ -1,170 +1,435 @@
 [
   {
-    "file": "apiiqc.js", "cmd": "iqc|quote|chat", "cat": "api",
-    "desc": "Screenshot chat iPhone dari teks", "help": ["iqc", "quote"],
-    "tags": ["api", "image", "quote"], "type": "image",
+    "file": "apiiqc.js",
+    "cmd": "iqc|quote|chat",
+    "cat": "api",
+    "desc": "Screenshot chat iPhone dari teks",
+    "help": [
+      "iqc",
+      "quote"
+    ],
+    "tags": [
+      "api",
+      "image",
+      "quote"
+    ],
+    "type": "image",
     "body": "const text = needText(m, '.iqc Halo dunia')\nconst file = await apiFile('/api/iqc', { text, time: '09.41' })\nawait sendImage(conn, m, file, 'Screenshot iPhone dari: ' + text)"
   },
   {
-    "file": "apimeme.js", "cmd": "meme|memin", "cat": "api",
-    "desc": "Buat meme dari URL gambar", "help": ["meme"],
-    "tags": ["api", "image", "meme"], "type": "image", "needsImage": true,
+    "file": "apimeme.js",
+    "cmd": "meme|memin",
+    "cat": "api",
+    "desc": "Buat meme dari URL gambar",
+    "help": [
+      "meme"
+    ],
+    "tags": [
+      "api",
+      "image",
+      "meme"
+    ],
+    "type": "image",
+    "needsImage": true,
     "body": "const parts = m.args || []\nlet image = ''\nconst rest = []\nfor (const p of parts) { if (p.includes('://')) image = p; else rest.push(p) }\nif (!image) image = await resolveImageSource(m)\nconst file = await apiFile('/api/meme', { image, top: rest[0] || '', bottom: rest[1] || '' })\nawait sendImage(conn, m, file, 'Meme: ' + (rest.join(' ') || 'tanpa teks'))"
   },
   {
-    "file": "apiwatermark.js", "cmd": "watermark|wm", "cat": "api",
-    "desc": "Beri watermark ke foto", "help": ["watermark"],
-    "tags": ["api", "image", "watermark"], "type": "image", "needsImage": true,
+    "file": "apiwatermark.js",
+    "cmd": "watermark|wm",
+    "cat": "api",
+    "desc": "Beri watermark ke foto",
+    "help": [
+      "watermark"
+    ],
+    "tags": [
+      "api",
+      "image",
+      "watermark"
+    ],
+    "type": "image",
+    "needsImage": true,
     "body": "const parts = m.args || []\nlet image = ''\nconst rest = []\nfor (const p of parts) { if (p.includes('://')) image = p; else rest.push(p) }\nif (!image) image = await resolveImageSource(m)\nconst file = await apiFile('/api/watermark', { image, text: rest.join(' ') || 'HABI API', position: 'br', opacity: '0.75' })\nawait sendImage(conn, m, file, 'Watermark: ' + (rest.join(' ') || 'HABI API'))"
   },
   {
-    "file": "apibrat.js", "cmd": "brat", "cat": "api",
-    "desc": "Gambar brat dari teks", "help": ["brat"],
-    "tags": ["api", "image", "brat"], "type": "image",
-    "body": "const text = needText(m, '.brat halo semua')\nconst file = await apiFile('/api/brat', { text })\nawait sendImage(conn, m, file, 'Brat: ' + text)"
+    "file": "apibrat.js",
+    "cmd": "brat",
+    "cat": "api",
+    "desc": "Stiker brat dari teks",
+    "help": [
+      "brat"
+    ],
+    "tags": [
+      "api",
+      "image",
+      "brat"
+    ],
+    "type": "image",
+    "body": "const text = needText(m, '.brat halo semua')\nconst file = await apiFile('/api/brat', { text })\nawait sendSticker(conn, m, file, { packname: 'HABI', author: 'Habibih Cloud ID' })"
   },
   {
-    "file": "apibratvid.js", "cmd": "bratvid|bratvideo", "cat": "api",
-    "desc": "Brat jadi video MP4", "help": ["bratvid"],
-    "tags": ["api", "video", "brat"], "type": "video",
-    "body": "const text = needText(m, '.bratvid halo semua')\nconst file = await apiFile('/api/bratvid', { text, duration: '2' })\nawait sendVideo(conn, m, file, 'Brat video: ' + text)"
+    "file": "apibratvid.js",
+    "cmd": "bratvid|bratvideo",
+    "cat": "api",
+    "desc": "Brat jadi video MP4",
+    "help": [
+      "bratvid"
+    ],
+    "tags": [
+      "api",
+      "video",
+      "brat"
+    ],
+    "type": "video",
+    "body": "const text = needText(m, '.bratvid halo semua')\nconst file = await apiFile('/api/bratvid', { text, duration: '2' })\nawait sendVideoSticker(conn, m, file, { seconds: 3, packname: 'HABI', author: 'Habibih Cloud ID' })"
   },
   {
-    "file": "apiwelcome.js", "cmd": "welcomecard|kartu|selamat", "cat": "api",
-    "desc": "Kartu sambutan member grup", "help": ["welcomecard"],
-    "tags": ["api", "image", "welcome"], "type": "image",
+    "file": "apiwelcome.js",
+    "cmd": "welcomecard|kartu|selamat",
+    "cat": "api",
+    "desc": "Kartu sambutan member grup",
+    "help": [
+      "welcomecard"
+    ],
+    "tags": [
+      "api",
+      "image",
+      "welcome"
+    ],
+    "type": "image",
     "body": "const [name, group] = m.args || []\nif (!name) throw new Error('Isi namanya dulu. Contoh: .welcomecard Budi Komunitas Hacker ID')\nconst file = await apiFile('/api/welcome', { name, group: group || 'Grup WhatsApp', accent: 'green' })\nawait sendImage(conn, m, file, 'Selamat datang, ' + name + '!')"
   },
   {
-    "file": "apireply.js", "cmd": "reply|balasfake|fakereply", "cat": "api",
-    "desc": "Fake balasan chat WhatsApp", "help": ["reply"],
-    "tags": ["api", "image", "reply"], "type": "image",
+    "file": "apireply.js",
+    "cmd": "reply|balasfake|fakereply",
+    "cat": "api",
+    "desc": "Fake balasan chat WhatsApp",
+    "help": [
+      "reply"
+    ],
+    "tags": [
+      "api",
+      "image",
+      "reply"
+    ],
+    "type": "image",
     "body": "const parts = m.args || []\nlet variant = '1'\nlet rest = parts\nif (/^[1-5]$/.test(parts[0] || '')) { variant = parts[0]; rest = parts.slice(1) }\nconst text = rest.join(' ') || 'Halo dunia'\nconst file = await apiFile('/api/reply', { variant, text, name: 'HABI Official' })\nawait sendImage(conn, m, file, 'Balasan (varian ' + variant + '): ' + text)"
   },
   {
-    "file": "apistickerapi.js", "cmd": "stikerapi|webp", "cat": "api",
-    "desc": "Jadikan foto jadi stiker (lewat API)", "help": ["stikerapi"],
-    "tags": ["api", "sticker"], "type": "raw", "needsImage": true,
+    "file": "apistickerapi.js",
+    "cmd": "stikerapi|webp",
+    "cat": "api",
+    "desc": "Jadikan foto jadi stiker (lewat API)",
+    "help": [
+      "stikerapi"
+    ],
+    "tags": [
+      "api",
+      "sticker"
+    ],
+    "type": "raw",
+    "needsImage": true,
     "body": "const image = needUrl(m, '.stikerapi https://contoh.com/foto.jpg')\nconst file = await apiFile('/api/sticker', { image, format: 'webp' })\nawait conn.sendMessage(m.chat, { sticker: file, mimetype: 'image/webp' }, { quoted: m.raw })"
   },
   {
-    "file": "apiytsearch.js", "cmd": "ytsearch|cariyt", "cat": "api",
-    "desc": "Cari video di YouTube", "help": ["ytsearch"],
-    "tags": ["api", "downloader"], "type": "text",
+    "file": "apiytsearch.js",
+    "cmd": "ytsearch|cariyt",
+    "cat": "api",
+    "desc": "Cari video di YouTube",
+    "help": [
+      "ytsearch"
+    ],
+    "tags": [
+      "api",
+      "downloader"
+    ],
+    "type": "text",
     "body": "const q = needText(m, '.ytsearch rizky janaka')\nconst data = await apiJson('/api/ytsearch', { q, limit: '8' })\nif (!data.results || !data.results.length) throw new Error('Tidak ada hasil untuk ' + q)\nconst list = data.results.map((r, i) =>\n  (i + 1) + '. ' + String(r.title).slice(0, 40) + '\\n   ' + (r.duration ? duration(r.duration) : '?') +\n  ' | ' + (r.uploader || '?') + '\\n   ' + r.url\n).join('\\n')\nawait sendText(conn, m, 'Hasil untuk ' + q + '\\n\\n' + list + '\\n\\nUnduh dengan .ytmp3 atau .ytmp4')"
   },
   {
-    "file": "apiytinfo.js", "cmd": "ytinfo|infoyt", "cat": "api",
-    "desc": "Metadata lengkap video YouTube", "help": ["ytinfo"],
-    "tags": ["api", "downloader"], "type": "text",
+    "file": "apiytinfo.js",
+    "cmd": "ytinfo|infoyt",
+    "cat": "api",
+    "desc": "Metadata lengkap video YouTube",
+    "help": [
+      "ytinfo"
+    ],
+    "tags": [
+      "api",
+      "downloader"
+    ],
+    "type": "text",
     "body": "const url = needUrl(m, '.ytinfo https://youtu.be/VIDEO_ID')\nconst d = await apiJson('/api/ytinfo', { url })\nawait sendText(conn, m, [\n  d.title, '',\n  'Durasi  : ' + duration(d.duration),\n  'Channel : ' + (d.uploader || '-'),\n  'Views   : ' + (d.view_count ? d.view_count.toLocaleString('id-ID') : '-'),\n  'Format  : ' + (d.ext || '-'),\n  '', d.webpage_url,\n].join('\\n'))"
   },
   {
-    "file": "apiytthumb.js", "cmd": "ytthumb", "cat": "api",
-    "desc": "URL thumbnail YouTube 3 resolusi", "help": ["ytthumb"],
-    "tags": ["api", "downloader"], "type": "text",
+    "file": "apiytthumb.js",
+    "cmd": "ytthumb",
+    "cat": "api",
+    "desc": "URL thumbnail YouTube 3 resolusi",
+    "help": [
+      "ytthumb"
+    ],
+    "tags": [
+      "api",
+      "downloader"
+    ],
+    "type": "text",
     "body": "const id = needText(m, '.ytthumb dQw4w9WgXcQ')\nconst d = await apiJson('/api/ytthumb', { id })\nawait sendText(conn, m, 'Thumbnail\\n\\nHD : ' + d.urls.maxres + '\\nSD : ' + d.urls.sd + '\\nHQ : ' + d.urls.hq)"
   },
   {
-    "file": "apispotify.js", "cmd": "spotify|spot", "cat": "api",
-    "desc": "Spotify ke link YouTube", "help": ["spotify"],
-    "tags": ["api", "downloader", "music"], "type": "text",
+    "file": "apispotify.js",
+    "cmd": "spotify|spot",
+    "cat": "api",
+    "desc": "Spotify ke link YouTube",
+    "help": [
+      "spotify"
+    ],
+    "tags": [
+      "api",
+      "downloader",
+      "music"
+    ],
+    "type": "text",
     "body": "const url = needUrl(m, '.spotify https://open.spotify.com/track/ID')\nconst d = await apiJson('/api/spotify', { url })\nawait sendText(conn, m, [\n  d.title, '',\n  'Artis : ' + d.artist,\n  'Yakin : ' + d.matched.confidence,\n  '', d.matched.url,\n  '', 'Unduh: .ytmp3 ' + d.matched.url,\n].join('\\n'))"
   },
   {
-    "file": "apiget.js", "cmd": "apiget|mediahub", "cat": "api",
-    "desc": "Ambil video dari link TikTok/FB/IG/X", "help": ["apiget"],
-    "tags": ["api", "downloader"], "type": "text",
+    "file": "apiget.js",
+    "cmd": "apiget|mediahub",
+    "cat": "api",
+    "desc": "Ambil video dari link TikTok/FB/IG/X",
+    "help": [
+      "apiget"
+    ],
+    "tags": [
+      "api",
+      "downloader"
+    ],
+    "type": "text",
     "body": "const url = needUrl(m, '.apiget https://www.tiktok.com/@user/video/ID')\nlet platform = '-'\ntry {\n  const det = await apiJson('/api/detect', { url })\n  platform = det.platform || '-'\n} catch { /* abaikan */ }\nconst d = await apiJson('/api/resolve', { url })\nconst v = d.media && d.media.video\nif (!v || !v.url) throw new Error('Tidak ada video yang bisa diambil dari link itu.')\nawait sendText(conn, m, [\n  String(d.title || '-').slice(0, 45), '',\n  'Platform : ' + d.platform,\n  'Sumber   : ' + d.source,\n  'Ukuran   : ' + bytes(v.size),\n  'Resolusi : ' + (v.width || '?') + 'x' + (v.height || '?'),\n  '', v.url,\n  '', 'Kirim video ini ke chat dengan .apikirim',\n].join('\\n'))"
   },
   {
-    "file": "apikirim.js", "cmd": "apikirim|kirimedia", "cat": "api",
-    "desc": "Kirim video dari link langsung ke chat", "help": ["apikirim"],
-    "tags": ["api", "downloader"], "type": "text",
+    "file": "apikirim.js",
+    "cmd": "apikirim|kirimedia",
+    "cat": "api",
+    "desc": "Kirim video dari link langsung ke chat",
+    "help": [
+      "apikirim"
+    ],
+    "tags": [
+      "api",
+      "downloader"
+    ],
+    "type": "text",
     "body": "const url = needUrl(m, '.apikirim https://www.tiktok.com/@user/video/ID')\nconst d = await apiJson('/api/resolve', { url })\nconst v = d.media && d.media.video\nif (!v || !v.url) throw new Error('Tidak ada video yang bisa diambil dari link itu.')\nawait conn.sendMessage(m.chat, {\n  video: { url: v.url }, mimetype: 'video/mp4',\n  caption: String(d.title || 'Media').slice(0, 60),\n}, { quoted: m.raw })"
   },
   {
-    "file": "apidetect.js", "cmd": "detect|ceklink", "cat": "api",
-    "desc": "Cek platform dari sebuah URL", "help": ["detect"],
-    "tags": ["api", "tools"], "type": "text",
+    "file": "apidetect.js",
+    "cmd": "detect|ceklink",
+    "cat": "api",
+    "desc": "Cek platform dari sebuah URL",
+    "help": [
+      "detect"
+    ],
+    "tags": [
+      "api",
+      "tools"
+    ],
+    "type": "text",
     "body": "const url = needUrl(m, '.detect https://vm.tiktok.com/XXXX/')\nconst d = await apiJson('/api/detect', { url })\nawait sendText(conn, m, 'Link itu platformnya: ' + d.platform + '\\n\\n' + url)"
   },
   {
-    "file": "apigetfile.js", "cmd": "getfile|filedl|unduhfile", "cat": "api",
-    "desc": "Unduh file dari URL", "help": ["getfile"],
-    "tags": ["api", "tools"], "type": "file",
+    "file": "apigetfile.js",
+    "cmd": "getfile|filedl|unduhfile",
+    "cat": "api",
+    "desc": "Unduh file dari URL",
+    "help": [
+      "getfile"
+    ],
+    "tags": [
+      "api",
+      "tools"
+    ],
+    "type": "file",
     "body": "const url = needUrl(m, '.getfile https://contoh.com/file.pdf')\nconst file = await apiFile('/api/file', { url })\nlet name = 'habi-file'\ntry { name = decodeURIComponent(new URL(url).pathname.split('/').pop() || name) } catch { /* abaikan */ }\nawait sendFile(conn, m, file, name.slice(0, 60))"
   },
   {
-    "file": "apihumanizer.js", "cmd": "humanizer|human|baixasi", "cat": "api",
-    "desc": "Tulis ulang teks kaku ala AI", "help": ["humanizer"],
-    "tags": ["api", "text"], "type": "text",
+    "file": "apihumanizer.js",
+    "cmd": "humanizer|human|baixasi",
+    "cat": "api",
+    "desc": "Tulis ulang teks kaku ala AI",
+    "help": [
+      "humanizer"
+    ],
+    "tags": [
+      "api",
+      "text"
+    ],
+    "type": "text",
     "body": "const text = needText(m, '.humanizer It is important to note that this')\nconst d = await apiJson('/api/humanizer', { text, mode: 'indo' })\nconst out = d.text || d.result || d.output || ''\nif (!out) throw new Error('API tidak mengembalikan teks.')\nawait sendText(conn, m, 'Humanizer\\n\\n' + String(out))"
   },
   {
-    "file": "apitranslate.js", "cmd": "translate|terjemah|tr", "cat": "api",
-    "desc": "Terjemahkan teks", "help": ["translate"],
-    "tags": ["api", "text"], "type": "text",
+    "file": "apitranslate.js",
+    "cmd": "translate|terjemah|tr",
+    "cat": "api",
+    "desc": "Terjemahkan teks",
+    "help": [
+      "translate"
+    ],
+    "tags": [
+      "api",
+      "text"
+    ],
+    "type": "text",
     "body": "const parts = m.args || []\nconst codes = ['id', 'en', 'ja', 'ko', 'zh', 'ar', 'ru', 'th', 'ms', 'de', 'fr', 'es', 'pt', 'it', 'nl', 'tr']\nlet to = 'id'\nif (codes.indexOf(String(parts[0] || '').toLowerCase()) !== -1) to = String(parts[0]).toLowerCase()\nconst text = parts.filter((p) => p.toLowerCase() !== to).join(' ') || needText(m, '.translate en Halo dunia')\nconst d = await apiJson('/api/translate', { text, to })\nconst out = d.translated || d.result || d.text || '(kosong)'\nawait sendText(conn, m, 'Terjemahan (' + to.toUpperCase() + ')\\n\\n' + String(out))"
   },
   {
-    "file": "apiocr.js", "cmd": "ocr|bacagambar", "cat": "api",
-    "desc": "Baca teks dari gambar", "help": ["ocr"],
-    "tags": ["api", "ocr"], "type": "text",
+    "file": "apiocr.js",
+    "cmd": "ocr|bacagambar",
+    "cat": "api",
+    "desc": "Baca teks dari gambar",
+    "help": [
+      "ocr"
+    ],
+    "tags": [
+      "api",
+      "ocr"
+    ],
+    "type": "text",
     "body": "const url = needUrl(m, '.ocr https://contoh.com/foto.jpg')\nconst d = await apiJson('/api/ocr', { url })\nconst t = d.text || d.result || d.ocr || ''\nif (!t) throw new Error('Tidak ada teks yang terbaca di gambar itu.')\nawait sendText(conn, m, 'Hasil OCR\\n\\n' + String(t).slice(0, 3000))"
   },
   {
-    "file": "apissweb.js", "cmd": "ssweb|screenshot", "cat": "api",
-    "desc": "Screenshot sebuah website", "help": ["ssweb"],
-    "tags": ["api", "web"], "type": "image",
+    "file": "apissweb.js",
+    "cmd": "ssweb|screenshot",
+    "cat": "api",
+    "desc": "Screenshot sebuah website",
+    "help": [
+      "ssweb"
+    ],
+    "tags": [
+      "api",
+      "web"
+    ],
+    "type": "image",
     "body": "const url = needUrl(m, '.ssweb https://example.com')\nconst file = await apiFile('/api/ssweb', { url })\nawait sendImage(conn, m, file, 'Screenshot ' + url)"
   },
   {
-    "file": "apiwebfetch.js", "cmd": "webfetch|bacaindex|readweb", "cat": "api",
-    "desc": "Ambil isi teks sebuah halaman web", "help": ["webfetch"],
-    "tags": ["api", "web"], "type": "text",
+    "file": "apiwebfetch.js",
+    "cmd": "webfetch|bacaindex|readweb",
+    "cat": "api",
+    "desc": "Ambil isi teks sebuah halaman web",
+    "help": [
+      "webfetch"
+    ],
+    "tags": [
+      "api",
+      "web"
+    ],
+    "type": "text",
     "body": "const url = needUrl(m, '.webfetch https://example.com')\nconst d = await apiJson('/api/webfetch', { url })\nconst t = d.content || d.text || d.result || ''\nif (!t) throw new Error('Halamannya kosong atau tidak bisa dibaca.')\nawait sendText(conn, m, url + '\\n\\n' + String(t).slice(0, 3000))"
   },
   {
-    "file": "apiremovebg.js", "cmd": "removebg|hpsbg", "cat": "api",
-    "desc": "Hapus background foto", "help": ["removebg"],
-    "tags": ["api", "image"], "type": "image",
+    "file": "apiremovebg.js",
+    "cmd": "removebg|hpsbg",
+    "cat": "api",
+    "desc": "Hapus background foto",
+    "help": [
+      "removebg"
+    ],
+    "tags": [
+      "api",
+      "image"
+    ],
+    "type": "image",
     "body": "const url = needUrl(m, '.removebg https://contoh.com/foto.jpg')\nconst file = await apiFile('/api/removebg', { url })\nawait sendImage(conn, m, file, 'Background sudah dihapus')"
   },
   {
-    "file": "aphonespecs.js", "cmd": "phonespec|spesifikhp|spek", "cat": "api",
-    "desc": "Spesifikasi smartphone", "help": ["phonespec"],
-    "tags": ["api", "info"], "type": "text",
+    "file": "aphonespecs.js",
+    "cmd": "phonespec|spesifikhp|spek",
+    "cat": "api",
+    "desc": "Spesifikasi smartphone",
+    "help": [
+      "phonespec"
+    ],
+    "tags": [
+      "api",
+      "info"
+    ],
+    "type": "text",
     "body": "const q = needText(m, '.phonespec iPhone 15 Pro')\nconst d = await apiJson('/api/phonespecs', { q })\nconst s = d.specs || d.data || d\nlet lines\nif (s && typeof s === 'object' && !Array.isArray(s)) {\n  lines = Object.keys(s).map((k) => '• ' + k + ' : ' + s[k]).join('\\n')\n} else {\n  lines = String(s)\n}\nawait sendText(conn, m, q + '\\n\\n' + String(lines).slice(0, 3000))"
   },
   {
-    "file": "aphonecompare.js", "cmd": "phonecompare|bandinghp", "cat": "api",
-    "desc": "Bandingkan 2 smartphone", "help": ["phonecompare"],
-    "tags": ["api", "info"], "type": "text",
+    "file": "aphonecompare.js",
+    "cmd": "phonecompare|bandinghp",
+    "cat": "api",
+    "desc": "Bandingkan 2 smartphone",
+    "help": [
+      "phonecompare"
+    ],
+    "tags": [
+      "api",
+      "info"
+    ],
+    "type": "text",
     "body": "const args = m.args || []\nconst a = args[0]\nconst b = args.slice(1).join(' ')\nif (!a || !b) throw new Error('Sebut dua HP. Contoh: .phonecompare iPhone 15 Pro Samsung S23')\nconst d = await apiJson('/api/phonecompare', { a, b })\nawait sendText(conn, m, [d.phone1 + '  vs  ' + d.phone2, '', d.url || ''].filter(Boolean).join('\\n'))"
   },
   {
-    "file": "alirik.js", "cmd": "lirik|carilirik", "cat": "api",
-    "desc": "Cari lirik lagu", "help": ["lirik"],
-    "tags": ["api", "music", "text"], "type": "text",
-    "body": "const q = needText(m, '.lirik Indonesia Raya')\nconst d = await apiJson('/api/lirik', { q })\nconst lyric = d.lyrics || d.lirik || d.text || ''\nif (!lyric) throw new Error('Lirik ' + q + ' tidak ketemu. Coba judul yang lebih umum.')\nawait sendText(conn, m, (d.title || q) + (d.artist ? ' - ' + d.artist : '') + '\\n\\n' + String(lyric).slice(0, 3000))"
+    "file": "alirik.js",
+    "cmd": "lirik|carilirik",
+    "cat": "api",
+    "desc": "Cari lirik lagu. Contoh: .lirik mardua holong",
+    "help": [
+      "lirik"
+    ],
+    "tags": [
+      "api",
+      "music",
+      "text"
+    ],
+    "type": "text",
+    "body": "let q = needText(m, '.lirik Indonesia Raya')\nq = q\n  .replace(/^\\s*(lirik|carilirik|lagu|lagu\\s+|lirik\\s+lagu)\\s*/i, '')\n  .replace(/\\s+/g, ' ')\n  .trim()\nif (!q) throw new Error('Judul lagu mana yang mau dicari? Contoh: `.lirik Indonesia Raya`')\nconst d = await apiJson('/api/lirik', { q })\nconst lyric = d.lyrics || d.lirik || d.text || ''\nif (!lyric) {\n  throw new Error(\n    'Lirik \"' + q + '\" tidak ada di database.\\n' +\n    'Coba pakai judul lagu yang lebih spesifik, contoh:\\n' +\n    '• .lirik mardua holong\\n' +\n    '• .lirik poda\\n' +\n    '• .lirik monokrom tulus'\n  )\n}\nawait sendText(conn, m, (d.title || q) + (d.artist ? ' - ' + d.artist : '') + '\\n\\n' + String(lyric).slice(0, 3000))"
   },
   {
-    "file": "apitts.js", "cmd": "ttsapi|suarakan", "cat": "api",
-    "desc": "Ubah teks jadi suara MP3 (lewat API)", "help": ["ttsapi"],
-    "tags": ["api", "audio"], "type": "audio",
+    "file": "apitts.js",
+    "cmd": "ttsapi|suarakan",
+    "cat": "api",
+    "desc": "Ubah teks jadi suara MP3 (lewat API)",
+    "help": [
+      "ttsapi"
+    ],
+    "tags": [
+      "api",
+      "audio"
+    ],
+    "type": "audio",
     "body": "const text = needText(m, '.ttsapi Halo dunia')\nconst file = await apiFile('/api/tts', { text })\nawait sendAudio(conn, m, file, text.slice(0, 60))"
   },
   {
-    "file": "apipdf.js", "cmd": "pdfcompress|kecilpdf", "cat": "api",
-    "desc": "Kompres ukuran file PDF", "help": ["pdfcompress"],
-    "tags": ["api", "tools"], "type": "file",
+    "file": "apipdf.js",
+    "cmd": "pdfcompress|kecilpdf",
+    "cat": "api",
+    "desc": "Kompres ukuran file PDF",
+    "help": [
+      "pdfcompress"
+    ],
+    "tags": [
+      "api",
+      "tools"
+    ],
+    "type": "file",
     "body": "const url = needUrl(m, '.pdfcompress https://contoh.com/file.pdf')\nconst file = await apiFile('/api/pdfcompress', { url })\nawait sendFile(conn, m, file, 'kecil.pdf', 'application/pdf')"
   },
   {
-    "file": "apistatus.js", "cmd": "apistatus|apihub", "cat": "api",
-    "desc": "Cek status koneksi ke REST API HABI", "help": ["apistatus"],
-    "tags": ["api", "tools"], "type": "status",
+    "file": "apistatus.js",
+    "cmd": "apistatus|apihub",
+    "cat": "api",
+    "desc": "Cek status koneksi ke REST API HABI",
+    "help": [
+      "apistatus"
+    ],
+    "tags": [
+      "api",
+      "tools"
+    ],
+    "type": "status",
     "body": "const d = await apiJson('/api/detect', { url: 'https://vm.tiktok.com/x' })\nconst base = String(process.env.HABI_API_URL || 'https://api.habibicloudserver.dpdns.org')\nawait sendText(conn, m, [\n  'REST API HABI', '',\n  'Status : ' + (d.status ? 'ONLINE' : 'OFFLINE'),\n  'Server : ' + base,\n  'Kunci  : ' + (process.env.HABI_API_KEY ? 'dari .env' : 'otomatis (register)'),\n  '', 'Perintah:',\n  '  .iqc        screenshot chat iPhone',\n  '  .reply      fake balasan chat',\n  '  .meme       meme dari URL gambar',\n  '  .watermark  watermark foto',\n  '  .brat       gambar brat',\n  '  .bratvid    brat jadi video',\n  '  .welcomecard kartu sambutan',\n  '  .ytsearch   cari YouTube',\n  '  .ytinfo     metadata video',\n  '  .spotify    Spotify ke YouTube',\n  '  .apiget     link media TikTok/FB/IG/X',\n  '  .apikirim   kirim video ke chat',\n  '  .ig         link Instagram',\n  '  .getfile    unduh file',\n  '  .translate  terjemahkan',\n  '  .ocr        baca teks gambar',\n  '  .ssweb      screenshot website',\n  '  .webfetch   baca isi web',\n  '  .removebg   hapus background',\n  '  .phonespec  spek HP',\n  '  .phonecompare banding 2 HP',\n  '  .lirik      cari lirik',\n  '  .ttsapi     teks jadi suara',\n  '  .pdfcompress kompres PDF',\n  '  .humanizer  tulis ulang teks AI',\n].join('\\n'))"
   }
 ]

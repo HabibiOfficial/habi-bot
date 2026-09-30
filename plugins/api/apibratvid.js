@@ -12,13 +12,13 @@
  */
 
 import { apiFile } from '../../lib/habi-api.js'
-import { fail, needText, needUrl, react, sendVideo } from '../../lib/api-helpers.js'
+import { fail, needText, needUrl, react, sendVideoSticker } from '../../lib/api-helpers.js'
 
 const handler = async (m, { conn }) => {
   try {
   const text = needText(m, '.bratvid halo semua')
   const file = await apiFile('/api/bratvid', { text, duration: '2' })
-  await sendVideo(conn, m, file, 'Brat video: ' + text)
+  await sendVideoSticker(conn, m, file, { seconds: 3, packname: 'HABI', author: 'Habibih Cloud ID' })
     await react(conn, m, '✅')
   } catch (error) {
     await fail(conn, m, error)

@@ -12,7 +12,7 @@
  */
 
 import { apiJson } from '../../lib/habi-api.js'
-import { fail, needText, needUrl, react, sendText } from '../../lib/api-helpers.js'
+import { fail, needText, needUrl, react } from '../../lib/api-helpers.js'
 
 const handler = async (m, { conn }) => {
   try {

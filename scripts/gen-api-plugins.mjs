@@ -46,14 +46,19 @@ for (const p of spec) {
   const needs = ['apiFile', 'apiJson']
   const helpers = new Set(['react', 'fail', 'needText', 'needUrl'])
 
+  // Helper utama hanya dipakai kalau body benar-benar memanggilnya,
+  // supaya import tidak bringing along sendImage/sendVideo yang menganggur.
   const primary = HELPERS[p.type]
-  if (primary) helpers.add(primary)
+  if (primary && new RegExp('\\b' + primary + '\\(').test(p.body)) helpers.add(primary)
   if (p.type === 'text' || p.type === 'status') {
     // ytsearch & ytinfo butuh duration(); yang lain tidak
     if (/duration\(/.test(p.body)) helpers.add('duration')
   }
   if (p.type === 'text' && /bytes\(/.test(p.body)) helpers.add('bytes')
   if (p.needsImage) helpers.add('resolveImageSource')
+  // Helper tambahan yang dipanggil langsung di body
+  if (/\bsendSticker\(/.test(p.body)) helpers.add('sendSticker')
+  if (/\bsendVideoSticker\(/.test(p.body)) helpers.add('sendVideoSticker')
 
   const helperImport = [...helpers].sort().join(', ')
   const usesFile = p.body.includes('apiFile(')
