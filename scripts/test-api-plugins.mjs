@@ -32,7 +32,6 @@ const CASES = [
   ['apistickerapi.js', 'https://picsum.photos/seed/z/400/400', 'sticker'],
   ['apissweb.js', 'https://example.com', 'image'],
   ['apiremovebg.js', 'https://picsum.photos/seed/w/500/400', 'image'],
-  ['apisaldo.js', '500000', 'image'],
   ['apitts.js', 'Halo dunia', 'audio'],
   ['apigetfile.js', 'https://www.google.com/robots.txt', 'document'],
   ['apipdf.js', 'https://raw.githubusercontent.com/mozilla/pdf.js/master/test/pdfs/basicapi.pdf', 'document'],

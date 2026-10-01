@@ -431,21 +431,5 @@
     ],
     "type": "status",
     "body": "const d = await apiJson('/api/detect', { url: 'https://vm.tiktok.com/x' })\nconst base = String(process.env.HABI_API_URL || 'https://api.habibicloudserver.dpdns.org')\nawait sendText(conn, m, [\n  'REST API HABI', '',\n  'Status : ' + (d.status ? 'ONLINE' : 'OFFLINE'),\n  'Server : ' + base,\n  'Kunci  : ' + (process.env.HABI_API_KEY ? 'dari .env' : 'otomatis (register)'),\n  '', 'Perintah:',\n  '  .iqc        screenshot chat iPhone',\n  '  .reply      fake balasan chat',\n  '  .meme       meme dari URL gambar',\n  '  .watermark  watermark foto',\n  '  .brat       gambar brat',\n  '  .bratvid    brat jadi video',\n  '  .welcomecard kartu sambutan',\n  '  .ytsearch   cari YouTube',\n  '  .ytinfo     metadata video',\n  '  .spotify    Spotify ke YouTube',\n  '  .apiget     link media TikTok/FB/IG/X',\n  '  .apikirim   kirim video ke chat',\n  '  .ig         link Instagram',\n  '  .getfile    unduh file',\n  '  .translate  terjemahkan',\n  '  .ocr        baca teks gambar',\n  '  .ssweb      screenshot website',\n  '  .webfetch   baca isi web',\n  '  .removebg   hapus background',\n  '  .phonespec  spek HP',\n  '  .phonecompare banding 2 HP',\n  '  .lirik      cari lirik',\n  '  .ttsapi     teks jadi suara',\n  '  .pdfcompress kompres PDF',\n  '  .humanizer  tulis ulang teks AI',\n].join('\\n'))"
-  },
-  {
-    "file": "apisaldo.js",
-    "cmd": "saldo|desainsaldo",
-    "cat": "api",
-    "desc": "Kartu saldo simulasi (watermark SIMULASI, bukan bukti transfer)",
-    "help": [
-      "saldo"
-    ],
-    "tags": [
-      "api",
-      "image",
-      "simulasi"
-    ],
-    "type": "image",
-    "body": "const nominal = needText(m, '.saldo 500000')\nconst file = await apiFile('/api/saldo', { nominal })\nawait sendImage(conn, m, file, 'Saldo simulasi: Rp ' + nominal + '\\n_simulasi — bukan transaksi nyata_')"
   }
 ]
