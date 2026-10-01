@@ -16,6 +16,7 @@
  */
 
 import { adzanLokal, daftarAdzan, waktuTersedia, CREDIT_ADZAN } from '../../lib/adzan.js'
+import { unduhAdzan, unduhSemuaAdzan, statusAdzan, bersihkanCacheAdzan } from '../../lib/adzan-download.js'
 import { hitungJadwal, cariKota, zonaKota, NAMA_WAKTU } from '../../lib/jadwal-sholat.js'
 import { sendText, sendAudio } from '../../lib/api-helpers.js'
 
@@ -171,14 +172,68 @@ const handler = async (m, { conn, usedPrefix }) => {
       m,
       files.length
         ? `🎧 *Audio adzan tersedia:*\n${files.map((f) => `• ${f}`).join('\n')}\n\nKetik: ${p}adzan audio`
-        : `🎧 Belum ada file audio adzan di server.\n\nKetik ${p}adzan untuk mendapat teks adzan.`
+        : `🎧 Belum ada file audio adzan di cache.\n\n💡 Admin bisa jalankan: ${p}adzan unduh\n💡 Ketik ${p}adzan untuk mendapat teks adzan.`
+    )
+  }
+
+  // .adzan unduh — unduh semua audio dari GitHub Release
+  if (q === 'unduh' || q === 'download') {
+    await sendText(conn, m, '⏳ Mengunduh audio adzan…')
+    const { berhasil, gagal } = await unduhSemuaAdzan({})
+    const baris = await statusAdzan()
+    const total = baris.reduce((a, b) => a + b.ukuran, 0)
+    return sendText(
+      conn,
+      m,
+`📥 *Unduhan audio adzan selesai*
+
+✅ Berhasil: ${berhasil.length} berkas
+${gagal.length ? `❌ Gagal: ${gagal.join(', ')}\n` : ''}
+📁 Total cache: ${(total / 1048576).toFixed(1)} MB
+
+${baris.map((b) => `${b.ada ? '✅' : '⬜'} ${b.waktu} — ${b.ukuran ? `${(b.ukuran / 1048576).toFixed(1)} MB` : 'belum ada'}`).join('\n')}
+
+_${CREDIT_ADZAN}_`
+    )
+  }
+
+  // .adzan status-cache — cek cache lokal
+  if (q === 'cache' || q === 'status-cache') {
+    const baris = await statusAdzan()
+    if (!baris.length) {
+      return sendText(conn, m, `📭 Belum ada manifest audio.\n\n💡 Jalankan: ${p}adzan unduh`)
+    }
+    const total = baris.reduce((a, b) => a + b.ukuran, 0)
+    return sendText(
+      conn,
+      m,
+`🗂 *Status cache audio adzan*
+
+${baris.map((b) => `${b.ada ? '✅' : '⬜'} ${b.waktu} — ${b.ada ? `${(b.ukuran / 1048576).toFixed(1)} MB` : 'belum ada'}`).join('\n')}
+
+📁 Total: ${(total / 1048576).toFixed(1)} MB / 5 berkas
+
+💡 Unduh: ${p}adzan unduh · Bersihkan: ${p}adzan bersihkan`
+    )
+  }
+
+  // .adzan bersihkan — hapus cache supaya diunduh ulang
+  if (q === 'bersihkan' || q === 'clean') {
+    const dihapus = await bersihkanCacheAdzan()
+    return sendText(
+      conn,
+      m,
+      dihapus.length
+        ? `🧹 Cache dibersihkan: ${dihapus.length} berkas dihapus.\n\n💡 Jalankan ${p}adzan unduh untuk mengunduh ulang.`
+        : '🧹 Cache sudah kosong.'
     )
   }
 
   // .adzan audio [waktu] [kota] -> kirim file
+  const RESERVED = /^(on|off|list|daftar|status|aktif|nonaktif|unduh|download|cache|status-cache|bersihkan|clean)$/i
   const mauAudio =
     /^(audio|suara|mp3|voice)$/i.test(q) ||
-    Boolean(arg && !/^(on|off|list|daftar|status|aktif|nonaktif)$/i.test(q))
+    Boolean(arg && !RESERVED.test(q))
 
   if (mauAudio) {
     const bersih = arg.replace(/^(audio|suara|mp3|voice)\s*/i, '').trim()

@@ -261,13 +261,63 @@ const adzanMod = await import('../plugins/islam/adzan.js')
 /* ---------- ADZAN: AUDIO & TEKS SUBUH ---------- */
 {
   const adzanLib = await import('../lib/adzan.js')
+  const unduhLib = await import('../lib/adzan-download.js')
+
+  // MP3 sengaja TIDAK disimpan di repo — bot mengunduhnya sendiri dari
+  // GitHub Release. Yang diverifikasi di sini adalah manifestnya.
+  const manifest = await unduhLib.bacaManifest()
+  const waktu = manifest ? Object.keys(manifest.berkas) : []
+  cek('adzan: manifest lengkap (5 waktu)',
+    Boolean(manifest) && waktu.length === 5,
+    waktu.join(',') || 'manifest tidak terbaca')
+
+  // tiap entri manifest harus punya ukuran + sha256 yang masuk akal
+  if (manifest) {
+    for (const [w, meta] of Object.entries(manifest.berkas)) {
+      cek('adzan manifest ' + w + ': ukuran & hash tercatat',
+        Number(meta.ukuran) > 100000 && /^[0-9a-f]{16}$/.test(String(meta.sha256 || '')),
+        `${meta.nama} ${meta.ukuran}b ${meta.sha256}`)
+    }
+  }
+
   const files = await adzanLib.daftarAdzan()
-  cek('adzan: berkas mp3 ada', files.length >= 5, String(files.length) + ' file: ' + files.join(','))
 
   for (const w of ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya']) {
     const f = await adzanLib.adzanLokal(w)
     cek('adzan audio ' + w + ': buffer valid', f && f.buffer.length > 100000,
       f ? f.nama + ' ' + f.buffer.length + 'b' : 'null')
+  }
+
+  // berkas yang terunduh harus cocok dengan manifest (anti file rusak)
+  {
+    const { createHash } = await import('node:crypto')
+    const f = await adzanLib.adzanLokal('maghrib')
+    const meta = manifest?.berkas?.maghrib
+    if (f && meta) {
+      const h = createHash('sha256').update(f.buffer).digest('hex')
+      cek('adzan: hash unduhan cocok dengan manifest', h.startsWith(meta.sha256),
+        h.slice(0, 16) + ' vs ' + meta.sha256)
+      cek('adzan: ukuran unduhan cocok dengan manifest', f.buffer.length === meta.ukuran,
+        f.buffer.length + ' vs ' + meta.ukuran)
+    }
+  }
+
+  // offline tidak boleh bikin bot crash.
+  // Cache dibersihkan dulu supaya skenario yang diuji benar-benar
+  // "belum punya file + tidak ada jaringan".
+  {
+    const { existsSync } = await import('node:fs')
+    const { unlink } = await import('node:fs/promises')
+    const { join } = await import('node:path')
+    const target = join(process.cwd(), 'assets', 'adzan', 'adzan-isya.mp3')
+    if (existsSync(target)) await unlink(target)
+
+    const asli = globalThis.fetch
+    globalThis.fetch = async () => { throw new Error('offline (simulasi test)') }
+    const f = await adzanLib.adzanLokal('isya', '', { izinkanUnduh: true })
+    globalThis.fetch = asli
+    cek('adzan: offline tanpa cache -> null, tidak crash', f === null,
+      f ? 'surprisingly dapat: ' + f.nama : 'null')
   }
 
   // khusUS: adzan Subuh harus punya 3 takbir setelah shahada, non-Subuh 2

@@ -7,3 +7,6 @@ bin/
 
 # database runtime
 data/
+
+# cache audio adzan (diunduh otomatis dari GitHub Release, bukan ikut repo)
+assets/adzan/*.mp3

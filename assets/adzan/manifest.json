@@ -1,0 +1,32 @@
+{
+  "versi": 1,
+  "credit": "Rekaman: Doha Adhan Recordings — Public Domain Mark 1.0 (Internet Archive)",
+  "sumber": "https://archive.org/details/adhan.recordings.from.doha.qatar",
+  "berkas": {
+    "subuh": {
+      "nama": "adzan-subuh.mp3",
+      "ukuran": 2901706,
+      "sha256": "a64afe612048e2e0"
+    },
+    "dzuhur": {
+      "nama": "adzan-dzuhur.mp3",
+      "ukuran": 2419879,
+      "sha256": "106b6c632799eb1d"
+    },
+    "ashar": {
+      "nama": "adzan-ashar.mp3",
+      "ukuran": 2521361,
+      "sha256": "f193d9055f9bd80a"
+    },
+    "maghrib": {
+      "nama": "adzan-maghrib.mp3",
+      "ukuran": 2693329,
+      "sha256": "c12bde72d45a1272"
+    },
+    "isya": {
+      "nama": "adzan-isya.mp3",
+      "ukuran": 2438980,
+      "sha256": "11ffb7a03b1436b5"
+    }
+  }
+}
