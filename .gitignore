@@ -4,3 +4,6 @@ sessions/
 storage/
 bin/
 *.log
+
+# database runtime
+data/

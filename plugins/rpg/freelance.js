@@ -71,7 +71,7 @@ const handler = async (rawM, tools) => {
 }
 
 handler.command = /^freelance$/i
-handler.help = ['freelance', 'desain', 'koding']
+handler.help = ['freelance', 'koding']
 handler.tags = ['rpg']
 handler.category = 'rpg'
 handler.groupOnly = true
