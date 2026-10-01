@@ -311,7 +311,7 @@ const handler = async (m, { conn, usedPrefix }) => {
   )
 }
 
-handler.command = /^(?:desain|jarvis|igstory|story|berita|news)$/i
+handler.command = /^(?:desain|jarvis|igstory|story|kartuberita|news)$/i
 handler.help = ['desain']
 handler.tags = ['canvas', 'image']
 handler.category = 'canvas'

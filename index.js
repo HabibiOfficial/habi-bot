@@ -19,7 +19,10 @@ import { attachAnticallHandler } from './core/anticall-handler.js'
 import { attachWelcomeHandler } from './core/welcome-handler.js'
 import { ensurePlayDependencies } from './scripts/ensure-play-deps.js'
 import { mulaiSchedulerAdzan } from './lib/scheduler-adzan.js'
-import { semuaPengaturan } from './plugins/islam/adzan.js'
+import { semuaPengaturan as pengaturanAdzan } from './plugins/islam/adzan.js'
+import { mulaiSchedulerInfo } from './lib/scheduler-info.js'
+import { semuaPengaturan as pengaturanGempa } from './plugins/info/gempa.js'
+import { semuaPengaturan as pengaturanCuaca } from './plugins/info/cuaca.js'
 
 async function bootstrap() {
   await printBanner()
@@ -53,7 +56,7 @@ async function bootstrap() {
       attachWelcomeHandler(activeConn)
 
       // Pengingat adzan otomatis untuk chat yang mengaktifkan .adzan on
-      mulaiSchedulerAdzan(activeConn, semuaPengaturan(), {
+      mulaiSchedulerAdzan(activeConn, pengaturanAdzan(), {
         kirimTeks: async (chat, teks) => {
           await activeConn.sendMessage(chat, { text: teks })
         },
@@ -62,8 +65,15 @@ async function bootstrap() {
         },
       })
 
+      mulaiSchedulerInfo(activeConn, pengaturanGempa, pengaturanCuaca, {
+        kirimTeks: async (chat, teks) => {
+          await activeConn.sendMessage(chat, { text: teks })
+        },
+      })
+
       printStatus('Message router aktif — bot siap menerima perintah.', 'success')
       printStatus('Scheduler adzan aktif — .adzan on <kota> untuk mengaktifkan.', 'success')
+      printStatus('Scheduler info aktif — .gempa on / .cuaca on untuk auto-alert.', 'success')
     },
   })
 }
