@@ -10,18 +10,8 @@
  * @source Habibih Cloud ID
  */
 
-import { hitungJadwal, cariKota, waktuTerdekat, NAMA_WAKTU, KOTA } from '../../lib/jadwal-sholat.js'
+import { hitungJadwal, cariKota, waktuTerdekat, zonaKota, NAMA_WAKTU, KOTA } from '../../lib/jadwal-sholat.js'
 import { sendText } from '../../lib/api-helpers.js'
-
-const ZONA = { wib: 7, wita: 8, wit: 9 }
-
-/** Zona waktu default tiap kota. */
-function zonaUntuk(namaKota) {
-  const n = String(namaKota).toLowerCase()
-  if (/makassar|balikpapan|manado|kupang|ambon|palu|gorontalo/.test(n)) return { z: 8, l: 'WITA' }
-  if (/jayapura|merauke|timika|ambon/.test(n)) return { z: 9, l: 'WIT' }
-  return { z: 7, l: 'WIB' }
-}
 
 const HARI = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
 const BULAN_PANJANG = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
@@ -80,13 +70,13 @@ const handler = async (m, { conn, usedPrefix }) => {
   const p = usedPrefix || '.'
   const arg = (m.args || []).join(' ').trim()
   const kota = cariKota(arg) || cariKota('jakarta')
-  const { z, l } = zonaUntuk(kota.nama)
+  const zona = zonaKota(kota)
   const now = new Date()
   const jadwal = hitungJadwal({
     latitude: kota.lat,
     longitude: kota.lon,
     tanggal: now,
-    zonaWaktu: z,
+    zonaWaktu: zona.jam,
   })
 
   const { sebelum, sesudah } = waktuTerdekat(jadwal, now)
@@ -97,7 +87,7 @@ const handler = async (m, { conn, usedPrefix }) => {
 
   const teks =
 `🕌 *JADWAL SHOLAT*
-*${kota.nama}* · ${l}
+*${kota.nama}* · ${zona.nama}
 
 📅 ${HARI[now.getDay()]}, ${now.getDate()} ${BULAN_PANJANG[now.getMonth()]} ${now.getFullYear()}
 🌙 ${tanggalHijriah(now).teks}

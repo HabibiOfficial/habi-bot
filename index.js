@@ -18,6 +18,8 @@ import { attachMessageRouter } from './core/router-pesan.js'
 import { attachAnticallHandler } from './core/anticall-handler.js'
 import { attachWelcomeHandler } from './core/welcome-handler.js'
 import { ensurePlayDependencies } from './scripts/ensure-play-deps.js'
+import { mulaiSchedulerAdzan } from './lib/scheduler-adzan.js'
+import { semuaPengaturan } from './plugins/islam/adzan.js'
 
 async function bootstrap() {
   await printBanner()
@@ -49,7 +51,19 @@ async function bootstrap() {
       attachMessageRouter(activeConn)
       attachAnticallHandler(activeConn)
       attachWelcomeHandler(activeConn)
+
+      // Pengingat adzan otomatis untuk chat yang mengaktifkan .adzan on
+      mulaiSchedulerAdzan(activeConn, semuaPengaturan(), {
+        kirimTeks: async (chat, teks) => {
+          await activeConn.sendMessage(chat, { text: teks })
+        },
+        kirimAudio: async (chat, buffer, teks) => {
+          await activeConn.sendMessage(chat, { audio: buffer, mimetype: 'audio/mpeg', caption: teks })
+        },
+      })
+
       printStatus('Message router aktif — bot siap menerima perintah.', 'success')
+      printStatus('Scheduler adzan aktif — .adzan on <kota> untuk mengaktifkan.', 'success')
     },
   })
 }

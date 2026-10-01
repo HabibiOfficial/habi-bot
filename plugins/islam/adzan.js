@@ -16,17 +16,22 @@
  */
 
 import { adzanLokal, daftarAdzan } from '../../lib/adzan.js'
-import { hitungJadwal, cariKota } from '../../lib/jadwal-sholat.js'
+import { hitungJadwal, cariKota, zonaKota } from '../../lib/jadwal-sholat.js'
 import { sendText, sendAudio } from '../../lib/api-helpers.js'
 
-/** Penyimpanan status adzan per chat (di luar file agar ringan). */
-const status = new Map()
+/**
+ * Pengaturan adzan per chat: { aktif, kota, uid }
+ * Kota disimpan terpisah dari status supaya bisa diganti kapan saja.
+ */
+const pengaturan = new Map()
 
-function zonaUntuk(namaKota) {
-  const n = String(namaKota).toLowerCase()
-  if (/makassar|balikpapan|manado|kupang|palu|gorontalo/.test(n)) return 8
-  if (/jayapura|merauke|timika|ambon/.test(n)) return 9
-  return 7
+function ambil(chat) {
+  if (!pengaturan.has(chat)) pengaturan.set(chat, { aktif: false, kota: 'jakarta' })
+  return pengaturan.get(chat)
+}
+
+export function semuaPengaturan() {
+  return pengaturan
 }
 
 const TEKS_ADZAN = `اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
@@ -56,7 +61,7 @@ function jadwalKota(nama) {
       latitude: kota.lat,
       longitude: kota.lon,
       tanggal: new Date(),
-      zonaWaktu: zonaUntuk(kota.nama),
+      zonaWaktu: zonaKota(kota).jam,
     }),
   }
 }
@@ -66,17 +71,70 @@ const handler = async (m, { conn, usedPrefix }) => {
   const chat = m.chat || m.from
   const arg = (m.args || []).join(' ').trim()
   const q = arg.toLowerCase()
-  const { kota, jadwal } = jadwalKota(arg.replace(/^(audio|suara|mp3)\s*/i, ''))
+  const setelan = ambil(chat)
+  const argKota = arg.replace(/^(audio|suara|mp3|on|off|list|daftar|status)\s*/i, '')
+  const { kota, jadwal } = jadwalKota(argKota || setelan.kota)
 
-  // .adzan on / off
-  if (q === 'on' || q === 'off') {
-    status.set(chat, q === 'on')
+  // .adzan on [kota] / off / status
+  if (/^(on|off|aktif|nonaktif|status)$/.test(q) || /^on\s+/.test(q)) {
+    const s_ = ambil(chat)
+    if (q === 'off' || q === 'nonaktif') {
+      s_.aktif = false
+      return sendText(
+        conn,
+        m,
+        `🔕 Adzan otomatis *NONAKTIF* di chat ini.`
+      )
+    }
+
+    if (q === 'status') {
+      const k = cariKota(s_.kota) || cariKota('jakarta')
+      return sendText(
+        conn,
+        m,
+        `⚙️ *Pengaturan adzan chat ini*
+
+🔔 Status : ${s_.aktif ? 'AKTIF' : 'NONAKTIF'}
+📍 Kota   : ${k.nama} (${zonaKota(k).nama})
+🕐 Jadwal: Subuh ${jadwal.subuh} · Dzuhur ${jadwal.dzuhur} · Ashar ${jadwal.ashar} · Maghrib ${jadwal.maghrib} · Isya ${jadwal.isya}
+
+💡 Ubah kota: ${p}adzan on serang
+💡 Matikan   : ${p}adzan off`
+      )
+    }
+
+    // .adzan on [kota]
+    const kotaBaru = q.replace(/^on\s*/, '').trim()
+    if (kotaBaru) {
+      const kt = cariKota(kotaBaru)
+      if (!kt) {
+        return sendText(
+          conn,
+          m,
+          `📍 Kota *"${kotaBaru}"* tidak ditemukan.
+
+💡 Contoh: ${p}adzan on serang · ${p}adzan on makassar · ${p}adzan on medan`
+        )
+      }
+      s_.kota = kt.nama.toLowerCase()
+    }
+
+    s_.aktif = true
+    const k = cariKota(s_.kota) || cariKota('jakarta')
+    const z = zonaKota(k)
+
     return sendText(
       conn,
       m,
-      q === 'on'
-        ? `🔔 Adzan otomatis *AKTIF* di chat ini.\nBot akan mengirim pengingat saat masuk waktu adzan.`
-        : `🔕 Adzan otomatis *NONAKTIF* di chat ini.`
+      `🔔 Adzan otomatis *AKTIF* di chat ini.
+
+📍 Kota : *${k.nama}* (${z.nama})
+🕐 Dikirim saat: Subuh ${jadwal.subuh} · Maghrib ${jadwal.maghrib} · Isya ${jadwal.isya}
+📍 ${k.lat.toFixed(4)}, ${k.lon.toFixed(4)}
+
+💡 Ganti kota: ${p}adzan on <kota>
+💡 Cek     : ${p}adzan status
+💡 Matikan : ${p}adzan off`
     )
   }
 

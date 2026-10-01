@@ -175,5 +175,87 @@ console.log('\n========== UJI PLUGIN ISLAM ==========\n')
   cek('dzikir: target tak dikenal -> pesan error', out.join('').includes('tidak dikenal'))
 }
 
-console.log(`\n========== HASIL AKHIR: ${lulus} lulus, ${gagal} gagal ==========\n`)
+
+/* ---------- ADZAN: SETTING KOTA ---------- */
+const adzanMod = await import('../plugins/islam/adzan.js')
+{
+  const chat = '628999@s.whatsapp.net'
+  const out = []
+  const conn = buatConn(out)
+  const msg = (args) => m(args)
+
+  await plug.adzan(msg(['on', 'serang']), { conn, usedPrefix: '.' })
+  let t = out.join('')
+  cek('adzan on serang: konfirmasi aktif', t.includes('AKTIF'), t.slice(0, 70))
+  cek('adzan on serang: kota tersimpan', t.includes('Serang'), t.slice(0, 70))
+  cek('adzan on serang: zona WIB', t.includes('WIB'))
+  cek('adzan on serang: tampil waktu maghrib', t.includes('Maghrib'))
+}
+
+{
+  const chat = '628998@s.whatsapp.net'
+  const out = []
+  const conn = buatConn(out)
+  await plug.adzan(m(['on', 'makassar']), { conn, usedPrefix: '.' })
+  cek('adzan on makassar: zona WITA', out.join('').includes('WITA'), out.join('').slice(0, 70))
+}
+
+{
+  const out = []
+  await plug.adzan(m(['on', 'kota ngawur']), { conn: buatConn(out), usedPrefix: '.' })
+  cek('adzan on kota ngawur: pesan error', out.join('').includes('tidak ditemukan'), out.join('').slice(0, 70))
+}
+
+{
+  const out = []
+  await plug.adzan(m(['status']), { conn: buatConn(out), usedPrefix: '.' })
+  const t = out.join('')
+  cek('adzan status: tampil pengaturan', t.includes('Pengaturan adzan') && t.includes('Kota'))
+}
+
+{
+  const out = []
+  await plug.adzan(m(['off']), { conn: buatConn(out), usedPrefix: '.' })
+  cek('adzan off: konfirmasi nonaktif', out.join('').includes('NONAKTIF'))
+}
+
+/* ---------- SCHOLAT: SERANG ---------- */
+{
+  const out = []
+  await plug.sholat(m(['serang']), { conn: buatConn(out), usedPrefix: '.' })
+  const t = out.join('\n')
+  cek('sholat serang: nama kota', t.includes('Serang'))
+  cek('sholat serang: zona WIB', t.includes('WIB'))
+  cek('sholat serang: 8 waktu', ['Imsak','Subuh','Terbit','Dhuha','Dzuhur','Ashar','Maghrib','Isya'].every((w) => t.includes(w)))
+}
+
+/* ---------- SCHEDULER ---------- */
+{
+  const { adzanTerjadwal, resetCache } = await import('../lib/scheduler-adzan.js')
+  const { hitungJadwal, cariKota, zonaKota } = await import('../lib/jadwal-sholat.js')
+
+  const serang = cariKota('serang')
+  const peng = new Map([['grup-tes', { aktif: true, kota: 'serang' }]])
+  const j = hitungJadwal({ latitude: serang.lat, longitude: serang.lon, tanggal: new Date(2026, 9, 2), zonaWaktu: zonaKota(serang).jam })
+  const [h, mn] = j.subuh.split('.').map(Number)
+  const saatSubuh = new Date(Date.UTC(2026, 9, 2, h - 7, mn, 0))
+
+  resetCache()
+  const r1 = adzanTerjadwal(peng, saatSubuh)
+  cek('scheduler: trigger saat subuh Serang', r1.length === 1 && r1[0].kota.nama === 'Serang', JSON.stringify(r1.map((x) => x.jam)))
+  cek('scheduler: nama waktu benar', r1[0]?.nama === 'Subuh', r1[0]?.nama)
+
+  const r2 = adzanTerjadwal(peng, saatSubuh)
+  cek('scheduler: tidak kirim dobel', r2.length === 0, String(r2.length))
+
+  resetCache()
+  const nonaktif = new Map([['grup-x', { aktif: false, kota: 'serang' }]])
+  cek('scheduler: hormat status nonaktif', adzanTerjadwal(nonaktif, saatSubuh).length === 0)
+
+  resetCache()
+  const lain = new Date(saatSubuh.getTime() + 3600_000)
+  cek('scheduler: diam di luar waktu adzan', adzanTerjadwal(peng, lain).length === 0)
+}
+
+console.log(`\n========== HASIL FINAL: ${lulus} lulus, ${gagal} gagal ==========\n`)
 process.exit(gagal ? 1 : 0)
