@@ -257,5 +257,42 @@ const adzanMod = await import('../plugins/islam/adzan.js')
   cek('scheduler: diam di luar waktu adzan', adzanTerjadwal(peng, lain).length === 0)
 }
 
-console.log(`\n========== HASIL FINAL: ${lulus} lulus, ${gagal} gagal ==========\n`)
+
+/* ---------- ADZAN: AUDIO & TEKS SUBUH ---------- */
+{
+  const adzanLib = await import('../lib/adzan.js')
+  const files = await adzanLib.daftarAdzan()
+  cek('adzan: berkas mp3 ada', files.length >= 5, String(files.length) + ' file: ' + files.join(','))
+
+  for (const w of ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya']) {
+    const f = await adzanLib.adzanLokal(w)
+    cek('adzan audio ' + w + ': buffer valid', f && f.buffer.length > 100000,
+      f ? f.nama + ' ' + f.buffer.length + 'b' : 'null')
+  }
+
+  // khusUS: adzan Subuh harus punya 3 takbir setelah shahada, non-Subuh 2
+  const oS = [], oM = []
+  await plug.adzan(m(['audio', 'subuh']), { conn: buatConn(oS), usedPrefix: '.' })
+  await plug.adzan(m(['audio', 'maghrib']), { conn: buatConn(oM), usedPrefix: '.' })
+  const tS = oS[0] || ''
+  const tM = oM[0] || ''
+  // baris setelah dua "la ilaha" (shahada)
+  function takbirSetelahShahada(txt) {
+    const baris = txt.split('\n')
+    const idx = baris.findIndex((b) => b.includes('لَا إِلٰهَ إِلَّا') )
+    if (idx < 0) return 0
+    const setelah = baris.slice(idx + 1)
+    for (const b of setelah) {
+      const n = (b.match(/اَللّٰهُ أَكْبَرُ/g) || []).length
+      if (n > 0) return n
+    }
+    return 0
+  }
+  cek('adzan: subuh punya 3 takbir setelah shahada', takbirSetelahShahada(tS) === 3, String(takbirSetelahShahada(tS)))
+  cek('adzan: maghrib punya 2 takbir setelah shahada', takbirSetelahShahada(tM) === 2, String(takbirSetelahShahada(tM)))
+  cek('adzan: teks subuh != maghrib', tS !== tM)
+  cek('adzan: ada credit lisensi', tS.includes('Public Domain'))
+}
+
+console.log(`\n========== HASIL ADZAN: ${lulus} lulus, ${gagal} gagal ==========\n`)
 process.exit(gagal ? 1 : 0)

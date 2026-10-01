@@ -15,8 +15,8 @@
  * @source Habibih Cloud ID
  */
 
-import { adzanLokal, daftarAdzan } from '../../lib/adzan.js'
-import { hitungJadwal, cariKota, zonaKota } from '../../lib/jadwal-sholat.js'
+import { adzanLokal, daftarAdzan, waktuTersedia, CREDIT_ADZAN } from '../../lib/adzan.js'
+import { hitungJadwal, cariKota, zonaKota, NAMA_WAKTU } from '../../lib/jadwal-sholat.js'
 import { sendText, sendAudio } from '../../lib/api-helpers.js'
 
 /**
@@ -34,24 +34,49 @@ export function semuaPengaturan() {
   return pengaturan
 }
 
-const TEKS_ADZAN = `اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
-اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
-اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
+/**
+ * Teks adzan.
+ *
+ * Adzan Subuh BEDA dari waktu lain menurut sunnah:
+ * - takbir terakhir 7 (tiga takbir beruntun)
+ * - "la hawla wa la quwwata illa billah" diucapkan DUA kali
+ */
+function teksAdzan(waktu) {
+  const subuh = String(waktu || '').toLowerCase() === 'subuh'
 
-اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
-اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
-اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
+  const pembuka = subuh
+    ? `اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ`
+    : `اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ`
 
-لَا إِلٰهَ إِلَّا اللّٰهُ · لَا إِلٰهَ إِلَّا اللّٰهُ
-لَا إِلٰهَ إِلَّا اللّٰهُ · لَا إِلٰهَ إِلَّا اللّٰهُ
-
-اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
-اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
-مَا شَاءَ اللّٰهُ · لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ
-
-اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
-اَللّٰهُ أَكْبَرُ · اَللّٰهُ أَكْبَرُ
+  const tahmid = subuh
+    ? `اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ
 لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ`
+    : `اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+مَا شَاءَ اللّٰهُ  لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ
+لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ`
+
+  return `${pembuka}
+
+لَا إِلٰهَ إِلَّا اللّٰهُ  لَا إِلٰهَ إِلَّا اللّٰهُ
+لَا إِلٰهَ إِلَّا اللّٰهُ  لَا إِلٰهَ إِلَّا اللّٰهُ
+
+${tahmid}
+
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+اَللّٰهُ أَكْبَرُ  اَللّٰهُ أَكْبَرُ
+لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ`
+}
 
 function jadwalKota(nama) {
   const kota = cariKota(nama) || cariKota('jakarta')
@@ -150,31 +175,40 @@ const handler = async (m, { conn, usedPrefix }) => {
     )
   }
 
-  // .adzan audio / .adzan <kota> -> coba file lokal
-  const mauAudio = /^(audio|suara|mp3|voice)$/i.test(q) || Boolean(arg && !/^(on|off|list|daftar)$/i.test(q))
+  // .adzan audio [waktu] [kota] -> kirim file
+  const mauAudio =
+    /^(audio|suara|mp3|voice)$/i.test(q) ||
+    Boolean(arg && !/^(on|off|list|daftar|status|aktif|nonaktif)$/i.test(q))
+
   if (mauAudio) {
-    const variasi = arg.replace(/^(audio|suara|mp3|voice)\s*/i, '').trim()
-    const lokal = await adzanLokal(variasi)
-    if (lokal) {
-      await sendAudio(
-        conn,
-        m,
-        lokal.buffer,
-        `🕌 *ADZAN — ${kota.nama}*\n\n${TEKS_ADZAN}`
-      )
+    const bersih = arg.replace(/^(audio|suara|mp3|voice)\s*/i, '').trim()
+
+    // .adzan audio subuh / .adzan subuh
+    const waktuArg = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].find((w) =>
+      bersih.toLowerCase().startsWith(w)
+    )
+    const sisa = waktuArg ? bersih.slice(waktuArg.length).trim() : bersih
+    const namaKota = cariKota(sisa) ? sisa : ''
+
+    const audio = await adzanLokal(waktuArg || '', namaKota)
+    const waktu = waktuArg || 'maghrib'
+    const labelWaktu = NAMA_WAKTU[waktu] || waktu
+    const judul = `🕌 *ADZAN ${String(labelWaktu).toUpperCase()} — ${kota.nama}*\n📍 ${kota.nama} · ${namaKota || 'nasional'}\n\n${teksAdzan(waktu)}`
+
+    if (audio) {
+      await sendAudio(conn, m, audio.buffer, `${judul}\n\n_${CREDIT_ADZAN}_`)
       return
     }
+
     return sendText(
       conn,
       m,
-`🕌 *ADZAN — ${kota.nama}*
+`${judul}
 
-File audio untuk "${variasi || 'nasional'}" belum tersedia di server.
-Inilah teks adzannya:
+🔇 File audio belum tersedia untuk waktu ini.
 
-${TEKS_ADZAN}
-
-💡 Admin bisa menambah file di: assets/adzan/adzan-${(variasi || 'nasional').toLowerCase()}.mp3`
+💡 Yang tersedia: ${(await waktuTersedia()).join(', ') || 'belum ada'}
+💡 Admin bisa menambah: assets/adzan/adzan-${waktu}.mp3`
     )
   }
 
@@ -186,13 +220,13 @@ ${TEKS_ADZAN}
 `🕌 *ADZAN — ${kota.nama}*
 📅 ${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} · ${kota.nama}
 
-${TEKS_ADZAN}
+${teksAdzan('maghrib')}
 
 ⏰ *Waktu adzan hari ini:*
   Maghrib ${jadwal.maghrib} · Isya ${jadwal.isya}
   Dzuhur ${jadwal.dzuhur} · Subuh ${jadwal.subuh}
 
-💡 ${p}adzan audio — kirim file audio adzan
+💡 ${p}adzan audio — kirim rekaman adzan\n💡 ${p}adzan audio subuh — rekaman adzan Subuh
 💡 ${p}adzan list — lihat file yang tersedia
 💡 ${p}adzan on — aktifkan pengingat otomatis`
   )
